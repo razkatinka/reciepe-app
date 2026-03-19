@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מוצא מתכונים</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#e85d04;--primary-light:#f48c06;--secondary:#ffd60a;--bg:#fdf6ec;--card:#fff;--text:#1a1a2e;--text-light:#6b7280;--border:#e8d5b7;--green:#2d6a4f;--red:#c1121f;--radius:16px;--shadow:0 4px 24px rgba(0,0,0,0.08);--transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;padding:24px 20px 32px;text-align:center;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 60%);pointer-events:none}
+header h1{font-size:2.2rem;font-weight:800;letter-spacing:-0.5px}
+header p{opacity:0.9;margin-top:4px;font-weight:300}
+.container{max-width:1100px;margin:0 auto;padding:24px 16px}
+.search-box{background:var(--card);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:24px}
+.search-box h2{font-size:1.1rem;font-weight:700;margin-bottom:12px;color:var(--primary)}
+.chip-input-wrap{border:2px solid var(--border);border-radius:12px;padding:8px 12px;display:flex;flex-wrap:wrap;gap:6px;min-height:52px;cursor:text;transition:var(--transition)}
+.chip-input-wrap:focus-within{border-color:var(--primary)}
+.chip{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;padding:4px 12px;border-radius:20px;font-size:0.85rem;display:flex;align-items:center;gap:6px;animation:chipIn 0.2s ease}
+@keyframes chipIn{from{transform:scale(0.7);opacity:0}to{transform:scale(1);opacity:1}}
+.chip button{background:none;border:none;color:#fff;cursor:pointer;padding:0;font-size:1rem;line-height:1;opacity:0.8;transition:opacity 0.2s}
+.chip button:hover{opacity:1}
+#ingredient-input{border:none;outline:none;font-family:'Heebo',sans-serif;font-size:0.95rem;flex:1;min-width:120px;background:transparent;color:var(--text)}
+.search-hint{font-size:0.8rem;color:var(--text-light);margin-top:6px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.filter-group{display:flex;gap:6px;flex-wrap:wrap}
+.filter-btn{padding:6px 14px;border-radius:20px;border:2px solid var(--border);background:#fff;font-family:'Heebo',sans-serif;font-size:0.85rem;cursor:pointer;transition:var(--transition);font-weight:500;color:var(--text-light)}
+.filter-btn.active{border-color:var(--primary);background:var(--primary);color:#fff}
+.actions-row{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.btn-search{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border:none;padding:10px 24px;border-radius:12px;font-family:'Heebo',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:var(--transition)}
+.btn-search:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(232,93,4,0.4)}
+.btn-surprise{background:#fff;color:var(--primary);border:2px solid var(--primary);padding:10px 20px;border-radius:12px;font-family:'Heebo',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;transition:var(--transition)}
+.btn-surprise:hover{background:var(--primary);color:#fff}
+.btn-shopping{background:#fff;color:var(--green);border:2px solid var(--green);padding:10px 20px;border-radius:12px;font-family:'Heebo',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;transition:var(--transition)}
+.btn-shopping:hover{background:var(--green);color:#fff}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.results-header h2{font-size:1.1rem;font-weight:700}
+.results-count{color:var(--text-light);font-size:0.9rem}
+.recipes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.recipe-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:var(--transition);cursor:pointer;border:2px solid transparent}
+.recipe-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,0.12);border-color:var(--border)}
+.recipe-card.expanded{grid-column:1/-1;cursor:default;border-color:var(--primary)}
+.card-header{padding:18px 18px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.card-title{font-size:1.15rem;font-weight:700;line-height:1.3}
+.card-meta{display:flex;gap:10px;margin-top:6px;font-size:0.82rem;color:var(--text-light)}
+.card-meta span{display:flex;align-items:center;gap:3px}
+.heart-btn{background:none;border:none;cursor:pointer;font-size:1.4rem;padding:2px;transition:var(--transition);flex-shrink:0}
+.heart-btn:hover{transform:scale(1.2)}
+.match-bar-wrap{padding:0 18px 14px}
+.match-label{font-size:0.82rem;color:var(--text-light);margin-bottom:4px;display:flex;justify-content:space-between}
+.match-bar{height:6px;background:#f0e4d0;border-radius:3px;overflow:hidden}
+.match-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:3px;transition:width 0.5s ease}
+.diet-tags{padding:0 18px 14px;display:flex;gap:6px;flex-wrap:wrap}
+.diet-tag{padding:2px 10px;border-radius:10px;font-size:0.75rem;font-weight:600;background:#f0e4d0;color:var(--primary)}
+.diet-tag.vegan{background:#d8f3dc;color:var(--green)}
+.diet-tag.vegetarian{background:#e9f5db;color:#386641}
+.expand-indicator{text-align:center;padding:8px;color:var(--text-light);font-size:0.8rem;border-top:1px solid var(--border)}
+.recipe-detail{padding:0 18px 18px;display:none}
+.recipe-card.expanded .recipe-detail{display:block}
+.recipe-card.expanded .expand-indicator{display:none}
+.detail-section{margin-top:18px}
+.detail-section h3{font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.servings-control{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.servings-control span{font-weight:700;font-size:1.1rem;min-width:24px;text-align:center}
+.ctrl-btn{width:32px;height:32px;border-radius:50%;border:2px solid var(--primary);background:#fff;color:var(--primary);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;transition:var(--transition)}
+.ctrl-btn:hover{background:var(--primary);color:#fff}
+.ingredients-list{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.ingredients-list li{padding:8px 12px;border-radius:10px;font-size:0.9rem;display:flex;justify-content:space-between;align-items:center}
+.ingredients-list li.have{background:#d8f3dc;color:var(--green)}
+.ingredients-list li.missing{background:#fde8e8;color:var(--red)}
+.ingredients-list li .ing-name{font-weight:600}
+.ingredients-list li .ing-amount{font-size:0.82rem;opacity:0.85}
+.add-to-list-btn{font-size:0.75rem;padding:2px 8px;border-radius:8px;border:1px solid var(--red);background:#fff;color:var(--red);cursor:pointer;transition:var(--transition);font-family:'Heebo',sans-serif}
+.add-to-list-btn:hover{background:var(--red);color:#fff}
+.steps-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+.step-item{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;background:#fdf6ec;border:2px solid transparent;transition:var(--transition);cursor:pointer}
+.step-item.done{background:#d8f3dc;border-color:#95d5b2;text-decoration:line-through;opacity:0.8}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0}
+.step-item.done .step-num{background:var(--green)}
+.step-content{flex:1}
+.step-text{font-size:0.92rem;line-height:1.5}
+.step-timer-btn{margin-top:6px;padding:4px 12px;border-radius:8px;border:none;background:var(--primary);color:#fff;font-family:'Heebo',sans-serif;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;gap:4px;transition:var(--transition)}
+.step-timer-btn:hover{background:var(--primary-light)}
+.step-timer-btn.running{background:var(--green)}
+.timer-display{font-weight:700;margin-right:4px}
+.tip-box{margin-top:16px;padding:14px;background:linear-gradient(135deg,#fff8e7,#fff3cd);border-radius:12px;border-right:4px solid var(--secondary);font-size:0.9rem}
+.tip-box strong{color:var(--primary-light)}
+.close-btn{display:block;margin:16px auto 0;padding:8px 24px;border-radius:10px;border:2px solid var(--border);background:#fff;font-family:'Heebo',sans-serif;font-size:0.9rem;cursor:pointer;transition:var(--transition)}
+.close-btn:hover{border-color:var(--primary);color:var(--primary)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;opacity:0;pointer-events:none;transition:opacity 0.3s}
+.modal.open{opacity:1;pointer-events:all}
+.modal-box{background:#fff;border-radius:var(--radius);padding:24px;max-width:480px;width:100%;max-height:80vh;overflow-y:auto;transform:translateY(20px);transition:transform 0.3s}
+.modal.open .modal-box{transform:translateY(0)}
+.modal-box h2{font-size:1.2rem;font-weight:700;margin-bottom:16px;color:var(--primary)}
+.shopping-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.shopping-item:last-child{border-bottom:none}
+.shopping-check{width:20px;height:20px;cursor:pointer;accent-color:var(--primary)}
+.shopping-item label{flex:1;margin-right:10px;cursor:pointer;font-size:0.95rem}
+.shopping-item label.checked{text-decoration:line-through;color:var(--text-light)}
+.del-btn{background:none;border:none;color:var(--red);cursor:pointer;font-size:1.1rem;padding:2px}
+.modal-actions{display:flex;gap:10px;margin-top:16px}
+.btn-clear{flex:1;padding:8px;border-radius:10px;border:2px solid var(--border);background:#fff;font-family:'Heebo',sans-serif;font-size:0.9rem;cursor:pointer;color:var(--red)}
+.btn-close-modal{flex:1;padding:8px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-family:'Heebo',sans-serif;font-size:0.9rem;cursor:pointer;font-weight:600}
+.empty-state{text-align:center;padding:48px 24px;color:var(--text-light)}
+.empty-state .emoji{font-size:3rem;margin-bottom:12px}
+.empty-state p{font-size:1rem}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:#333;color:#fff;padding:10px 20px;border-radius:10px;font-size:0.9rem;z-index:200;transition:transform 0.3s}
+.toast.show{transform:translateX(-50%) translateY(0)}
+@media(max-width:600px){header h1{font-size:1.6rem}.recipes-grid{grid-template-columns:1fr}.ingredients-list{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>🍳 מוצא מתכונים</h1>
+<p>הכניסו מרכיבים ומצאו מה לבשל היום</p>
+</header>
+<div class="container">
+<div class="search-box">
+<h2>מה יש לכם במטבח?</h2>
+<div class="chip-input-wrap" id="chip-wrap">
+<input type="text" id="ingredient-input" placeholder="הכניסו מרכיב ולחצו Enter...">
+</div>
+<div class="search-hint">לחצו Enter או פסיק להוספת מרכיב</div>
+<div class="filters">
+<div class="filter-group" id="meal-filters">
+<button class="filter-btn active" data-type="meal" data-value="">הכל</button>
+<button class="filter-btn" data-type="meal" data-value="ארוחת בוקר">ארוחת בוקר</button>
+<button class="filter-btn" data-type="meal" data-value="ארוחת צהריים">צהריים</button>
+<button class="filter-btn" data-type="meal" data-value="ארוחת ערב">ארוחת ערב</button>
+</div>
+<div class="filter-group" id="diet-filters">
+<button class="filter-btn active" data-type="diet" data-value="">ללא סינון</button>
+<button class="filter-btn" data-type="diet" data-value="צמחוני">צמחוני</button>
+<button class="filter-btn" data-type="diet" data-value="טבעוני">טבעוני</button>
+<button class="filter-btn" data-type="diet" data-value="בשרי">בשרי</button>
+</div>
+</div>
+<div class="actions-row">
+<button class="btn-search" onclick="searchRecipes()">🔍 חפש מתכונים</button>
+<button class="btn-surprise" onclick="surpriseMe()">🎲 הפתע אותי</button>
+<button class="btn-shopping" onclick="openShopping()">🛒 רשימת קניות</button>
+</div>
+</div>
+<div class="results-header" id="results-header" style="display:none">
+<h2 id="results-title">תוצאות</h2>
+<span class="results-count" id="results-count"></span>
+</div>
+<div class="recipes-grid" id="recipes-grid"></div>
+</div>
+<div class="modal" id="shopping-modal">
+<div class="modal-box">
+<h2>🛒 רשימת קניות</h2>
+<div id="shopping-list-items"></div>
+<div class="modal-actions">
+<button class="btn-clear" onclick="clearShopping()">נקה הכל</button>
+<button class="btn-close-modal" onclick="closeShopping()">סגור</button>
+</div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const DB=[
+{name:"שקשוקה",meal:"ארוחת בוקר",time:20,servings:2,diet:["צמחוני"],ingredients:[{name:"ביצים",amount:4,unit:"יח'"},{name:"עגבניות",amount:3,unit:"יח'"},{name:"פלפל אדום",amount:1,unit:"יח'"},{name:"בצל",amount:1,unit:"יח'"},{name:"שום",amount:3,unit:"שיני"},{name:"שמן זית",amount:2,unit:"כף"}],steps:[{text:"חממו שמן זית במחבת ועדיפות טבעוני את הבצל והפלפל כ-5 דקות.",timer:5},{text:"הוסיפו שום ועגבניות מרוסקות, בשלו 8 דקות.",timer:8},{text:"יצרו גומות בתוך הרוטב ושברו לתוכן ביצים.",timer:null},{text:"כסו ובשלו 5-7 דקות עד שהחלבון מוצק והחלמון רך.",timer:6}],tip:"הוסיפו גבינת פטה מפוררת לעשירות נוספת"},
+{name:"חומוס ביתי",meal:"ארוחת צהריים",time:30,servings:4,diet:["טבעוני","צמחוני"],ingredients:[{name:"חומוס מבושל",amount:400,unit:"גרם"},{name:"טחינה",amount:4,unit:"כף"},{name:"לימון",amount:1,unit:"יח'"},{name:"שום",amount:2,unit:"שיני"},{name:"שמן זית",amount:3,unit:"כף"},{name:"מלח",amount:1,unit:"כפית"}],steps:[{text:"שימו חומוס, טחינה, שום ולימון במעבד מזון.",timer:null},{text:"עבדו 3 דקות עד לקבלת מרקם חלק.",timer:3},{text:"הוסיפו מלח ושמן זית, עבדו עוד דקה.",timer:1},{text:"הגישו עם שמן זית, פפריקה ופטרוזיליה.",timer:null}],tip:"לחומוס חלק במיוחד הסירו את הקליפות מהגרגרים"},
+{name:"פסטה בולונז",meal:"ארוחת ערב",time:45,servings:4,diet:["בשרי"],ingredients:[{name:"בשר טחון",amount:500,unit:"גרם"},{name:"פסטה",amount:400,unit:"גרם"},{name:"עגבניות מרוסקות",amount:400,unit:"גרם"},{name:"בצל",amount:1,unit:"יח'"},{name:"שום",amount:4,unit:"שיני"},{name:"שמן זית",amount:2,unit:"כף"},{name:"יין אדום",amount:100,unit:"מ\"ל"}],steps:[{text:"טגנו בצל ושום בשמן זית 5 דקות.",timer:5},{text:"הוסיפו בשר טחון ועדיפות מעדן עד שהשחים.",timer:10},{text:"הוסיפו יין ובשלו 2 דקות.",timer:2},{text:"הוסיפו עגבניות ובשלו על אש נמוכה 20 דקות.",timer:20},{text:"בשלו פסטה לפי הוראות האריזה, ערבבו עם הרוטב.",timer:10}],tip:"הוסיפו עלי בזיליקום טרי לפני ההגשה"},
+{name:"סלט יווני",meal:"ארוחת צהריים",time:15,servings:2,diet:["צמחוני"],ingredients:[{name:"מלפפון",amount:2,unit:"יח'"},{name:"עגבניות",amount:2,unit:"יח'"},{name:"פלפל ירוק",amount:1,unit:"יח'"},{name:"בצל סגול",amount:0.5,unit:"יח'"},{name:"זיתים",amount:50,unit:"גרם"},{name:"גבינת פטה",amount:100,unit:"גרם"},{name:"שמן זית",amount:3,unit:"כף"}],steps:[{text:"חתכו את כל הירקות לקוביות.",timer:null},{text:"ערבבו בקערה עם שמן זית ומלח.",timer:null},{text:"פזרו גבינת פטה וזיתים מעל.",timer:null}],tip:"הוסיפו אורגנו יבש לטעם אותנטי"},
+{name:"קציצות עוף",meal:"ארוחת ערב",time:35,servings:4,diet:["בשרי"],ingredients:[{name:"עוף טחון",amount:500,unit:"גרם"},{name:"בצל",amount:1,unit:"יח'"},{name:"פירורי לחם",amount:3,unit:"כף"},{name:"ביצה",amount:1,unit:"יח'"},{name:"שום",amount:2,unit:"שיני"},{name:"פטרוזיליה",amount:1,unit:"צרור"},{name:"שמן",amount:3,unit:"כף"}],steps:[{text:"ערבבו עוף, בצל מגורד, פירורי לחם, ביצה, שום ופטרוזיליה.",timer:null},{text:"צרו קציצות בגודל כדור גולף.",timer:null},{text:"חממו שמן ועדיפות קציצות 4 דקות מכל צד.",timer:8}],tip:"הוסיפו כמון לטעם מזרחי"},
+{name:"ריזוטו פטריות",meal:"ארוחת ערב",time:40,servings:3,diet:["צמחוני"],ingredients:[{name:"אורז ארבוריו",amount:300,unit:"גרם"},{name:"פטריות",amount:300,unit:"גרם"},{name:"בצל",amount:1,unit:"יח'"},{name:"יין לבן",amount:100,unit:"מ\"ל"},{name:"ציר ירקות",amount:900,unit:"מ\"ל"},{name:"גבינת פרמזן",amount:50,unit:"גרם"},{name:"חמאה",amount:30,unit:"גרם"}],steps:[{text:"טגנו בצל בחמאה 5 דקות.",timer:5},{text:"הוסיפו פטריות ועדיפות 5 דקות.",timer:5},{text:"הוסיפו אורז וטגנו 2 דקות.",timer:2},{text:"הוסיפו יין ובשלו עד שנספג.",timer:3},{text:"הוסיפו ציר מצקת מצקת תוך ערבוב מתמיד, כ-18 דקות.",timer:18},{text:"הוסיפו פרמזן ואיפה מהאש.",timer:null}],tip:"הסוד הוא בערבוב מתמיד ובציר חם"},
+{name:"פלאפל",meal:"ארוחת צהריים",time:30,servings:4,diet:["טבעוני","צמחוני"],ingredients:[{name:"חומוס מושרה",amount:400,unit:"גרם"},{name:"בצל",amount:1,unit:"יח'"},{name:"שום",amount:4,unit:"שיני"},{name:"כוסברה",amount:1,unit:"צרור"},{name:"פטרוזיליה",amount:1,unit:"צרור"},{name:"כמון",amount:1,unit:"כפית"},{name:"שמן לטיגון",amount:500,unit:"מ\"ל"}],steps:[{text:"השרו חומוס ללילה, סננו.",timer:null},{text:"טחנו הכל במעבד מזון לפירורים גסים.",timer:null},{text:"צרו כדורים ואחסנו במקרר 30 דקות.",timer:30},{text:"עדיפות בשמן עמוק ב-180° כ-4 דקות.",timer:4}],tip:"אל תשתמשו בחומוס מבושל — זה הסוד"},
+{name:"לחמה ביין",meal:"ארוחת ערב",time:120,servings:6,diet:["בשרי"],ingredients:[{name:"לחם בקר",amount:1,unit:"ק\"ג"},{name:"יין אדום",amount:250,unit:"מ\"ל"},{name:"גזר",amount:3,unit:"יח'"},{name:"בצל",amount:2,unit:"יח'"},{name:"שום",amount:6,unit:"שיני"},{name:"רוזמרין",amount:2,unit:"ענפים"},{name:"שמן זית",amount:3,unit:"כף"}],steps:[{text:"חרכו בשר מכל הצדדים בסיר כבד.",timer:10},{text:"הוסיפו ירקות ועדיפות 5 דקות.",timer:5},{text:"הוסיפו יין ובשלו 2 דקות.",timer:2},{text:"הוסיפו מים לכיסוי, בשלו 90 דקות על אש נמוכה.",timer:90}],tip:"ככל שהבשר מבושל יותר, הוא רך יותר"},
+{name:"פנקייק בלוברי",meal:"ארוחת בוקר",time:20,servings:4,diet:["צמחוני"],ingredients:[{name:"קמח",amount:200,unit:"גרם"},{name:"חלב",amount:250,unit:"מ\"ל"},{name:"ביצים",amount:2,unit:"יח'"},{name:"בלוברי",amount:150,unit:"גרם"},{name:"אבקת אפייה",amount:2,unit:"כפית"},{name:"סוכר",amount:2,unit:"כף"},{name:"חמאה",amount:30,unit:"גרם"}],steps:[{text:"ערבבו קמח, סוכר ואבקת אפייה.",timer:null},{text:"הוסיפו חלב, ביצים וחמאה מומסת, ערבבו.",timer:null},{text:"בשלו פנקייקים על מחבת חמה 2 דקות מכל צד.",timer:4},{text:"הוסיפו בלוברי לתוך הבלילה בעת הבישול.",timer:null}],tip:"אל תערבבו יתר על המידה — גושים קטנים זה בסדר"},
+{name:"טאבולה",meal:"ארוחת צהריים",time:20,servings:4,diet:["טבעוני","צמחוני"],ingredients:[{name:"בורגול",amount:150,unit:"גרם"},{name:"עגבניות",amount:3,unit:"יח'"},{name:"מלפפון",amount:1,unit:"יח'"},{name:"פטרוזיליה",amount:2,unit:"צרור"},{name:"נענע",amount:0.5,unit:"צרור"},{name:"לימון",amount:2,unit:"יח'"},{name:"שמן זית",amount:4,unit:"כף"}],steps:[{text:"שפכו מים רותחים על הבורגול, כסו 15 דקות.",timer:15},{text:"קצצו דק פטרוזיליה, נענע, עגבניות ומלפפון.",timer:null},{text:"ערבבו הכל עם לימון ושמן זית.",timer:null}],tip:"ככל שהפטרוזיליה קצוצה דק יותר, כך הסלט טוב יותר"},
+{name:"ביצים מקושקשות ברוכב",meal:"ארוחת בוקר",time:10,servings:2,diet:["צמחוני"],ingredients:[{name:"ביצים",amount:4,unit:"יח'"},{name:"חמאה",amount:20,unit:"גרם"},{name:"שמנת",amount:2,unit:"כף"},{name:"מלח",amount:0.5,unit:"כפית"},{name:"עירית",amount:1,unit:"צרור"}],steps:[{text:"טרפו ביצים עם שמנת ומלח.",timer:null},{text:"חממו חמאה במחבת על אש נמוכה.",timer:null},{text:"הוסיפו ביצים וערבבו לאט עם מרית, 4 דקות.",timer:4},{text:"הסירו מאש לפני שמוצקות לחלוטין.",timer:null}],tip:"הסוד: אש נמוכה ואל תבשלו יתר"},
+{name:"כרובית קלויה",meal:"ארוחת ערב",time:35,servings:4,diet:["טבעוני","צמחוני"],ingredients:[{name:"כרובית",amount:1,unit:"יח'"},{name:"שמן זית",amount:3,unit:"כף"},{name:"שום",amount:4,unit:"שיני"},{name:"כורכום",amount:1,unit:"כפית"},{name:"פפריקה",amount:1,unit:"כפית"},{name:"מלח",amount:1,unit:"כפית"}],steps:[{text:"חממו תנור ל-220°.",timer:null},{text:"חלקו כרובית לפרחים, ערבבו עם שמן ותבלינים.",timer:null},{text:"פרשו על תבנית וצלו 25-30 דקות עד שזהוב.",timer:28}],tip:"הפכו פעם אחת באמצע הצלייה"},
+{name:"עוף מרוקאי עם חמוצים",meal:"ארוחת ערב",time:60,servings:4,diet:["בשרי"],ingredients:[{name:"ירך עוף",amount:8,unit:"יח'"},{name:"לימון כבוש",amount:2,unit:"יח'"},{name:"זיתים ירוקים",amount:100,unit:"גרם"},{name:"בצל",amount:2,unit:"יח'"},{name:"שום",amount:5,unit:"שיני"},{name:"כוסברה",amount:1,unit:"צרור"},{name:"ג'ינג'ר",amount:2,unit:"ס\"מ"}],steps:[{text:"ערבבו תבלינים ושמן, מרחו על העוף.",timer:null},{text:"טגנו עוף עד שחום מכל הצדדים.",timer:8},{text:"הוסיפו בצל, שום וג'ינג'ר.",timer:5},{text:"הוסיפו לימון כבוש וזיתים, בשלו 40 דקות.",timer:40}],tip:"הוסיפו כוס מים אם הרוטב סמיך מדי"},
+{name:"סושי ביתי",meal:"ארוחת ערב",time:60,servings:4,diet:["בשרי"],ingredients:[{name:"אורז לסושי",amount:300,unit:"גרם"},{name:"חומץ אורז",amount:3,unit:"כף"},{name:"דג סלמון",amount:200,unit:"גרם"},{name:"אבוקדו",amount:2,unit:"יח'"},{name:"מלפפון",amount:1,unit:"יח'"},{name:"נורי",amount:4,unit:"גיליון"},{name:"סויה",amount:3,unit:"כף"}],steps:[{text:"בשלו אורז לפי הוראות, ערבבו עם חומץ ומלח.",timer:15},{text:"כסו את מחצלת הסושי בנייר פלסטיק, הניחו נורי.",timer:null},{text:"פרשו אורז דק, הוסיפו מילוי.",timer:null},{text:"גלגלו הדוק, חתכו לפרוסות.",timer:null}],tip:"החזירו לראש - האורז חייב להיות חמים"},
+{name:"מרק עדשים",meal:"ארוחת צהריים",time:40,servings:6,diet:["טבעוני","צמחוני"],ingredients:[{name:"עדשים אדומות",amount:300,unit:"גרם"},{name:"בצל",amount:2,unit:"יח'"},{name:"גזר",amount:2,unit:"יח'"},{name:"שום",amount:3,unit:"שיני"},{name:"כמון",amount:2,unit:"כפית"},{name:"כורכום",amount:1,unit:"כפית"},{name:"שמן זית",amount:3,unit:"כף"}],steps:[{text:"טגנו בצל וגזר בשמן עד שמתרככים.",timer:8},{text:"הוסיפו שום ותבלינים, בשלו דקה.",timer:1},{text:"הוסיפו עדשים ו-1.5 ליטר מים.",timer:null},{text:"בשלו 25 דקות, ריסקו לחלק.",timer:25}],tip:"הוסיפו מיץ לימון בסוף לרעננות"},
+{name:"בייגלה ירושלמי",meal:"ארוחת בוקר",time:25,servings:4,diet:["טבעוני","צמחוני"],ingredients:[{name:"בייגלה",amount:4,unit:"יח'"},{name:"טחינה",amount:4,unit:"כף"},{name:"זעתר",amount:2,unit:"כפית"},{name:"שמן זית",amount:1,unit:"כף"},{name:"עגבניות",amount:2,unit:"יח'"}],steps:[{text:"חממו בייגלה בתנור 5 דקות.",timer:5},{text:"ערבבו טחינה עם מעט מים לדלילה.",timer:null},{text:"מרחו טחינה, פזרו זעתר, הגישו עם עגבניות.",timer:null}],tip:"בייגלה ירושלמי אמיתי עם שומשום"},
+{name:"דג בסגנון אסייתי",meal:"ארוחת ערב",time:25,servings:2,diet:["בשרי"],ingredients:[{name:"פילה דג לבן",amount:400,unit:"גרם"},{name:"סויה",amount:3,unit:"כף"},{name:"שמן שומשום",amount:1,unit:"כף"},{name:"ג'ינג'ר",amount:2,unit:"ס\"מ"},{name:"שום",amount:2,unit:"שיני"},{name:"כוסברה",amount:1,unit:"צרור"},{name:"לימון",amount:1,unit:"יח'"}],steps:[{text:"ערבבו סויה, שמן שומשום, שום וג'ינג'ר.",timer:null},{text:"מרינדו את הדג 15 דקות.",timer:15},{text:"צלו בתנור 200° כ-12 דקות.",timer:12},{text:"הגישו עם כוסברה ולימון.",timer:null}],tip:"אל תבשלו יתר — הדג מוכן כשניתן לשבור אותו"},
+{name:"קינואה עם ירקות קלויים",meal:"ארוחת צהריים",time:35,servings:3,diet:["טבעוני","צמחוני"],ingredients:[{name:"קינואה",amount:200,unit:"גרם"},{name:"פלפל אדום",amount:2,unit:"יח'"},{name:"קישוא",amount:2,unit:"יח'"},{name:"בצל סגול",amount:1,unit:"יח'"},{name:"שמן זית",amount:4,unit:"כף"},{name:"לימון",amount:1,unit:"יח'"},{name:"עשבי תיבול",amount:1,unit:"צרור"}],steps:[{text:"חממו תנור ל-200°.",timer:null},{text:"חתכו ירקות, ערבבו עם שמן ומלח, צלו 20 דקות.",timer:20},{text:"בשלו קינואה לפי הוראות.",timer:15},{text:"ערבבו קינואה עם ירקות, לימון ועשבי תיבול.",timer:null}],tip:"הוסיפו חלבה מגוררת לטעם מיוחד"},
+{name:"מוחמרה",meal:"ארוחת צהריים",time:15,servings:6,diet:["טבעוני","צמחוני"],ingredients:[{name:"פלפל אדום",amount:4,unit:"יח'"},{name:"אגוזי מלך",amount:100,unit:"גרם"},{name:"שמן זית",amount:3,unit:"כף"},{name:"מיץ לימון",amount:2,unit:"כף"},{name:"פפריקה חריפה",amount:1,unit:"כפית"},{name:"עוגיות גרהם",amount:50,unit:"גרם"}],steps:[{text:"צלו פלפלים בתנור עד שמתרכך, הסירו קליפה.",timer:15},{text:"עבדו במעבד מזון עם אגוזים, לחם, שמן ופפריקה.",timer:null},{text:"הוסיפו לימון ומלח, הגישו עם לחם.",timer:null}],tip:"אפשר להוסיף קליפת לימון מגוררת"},
+{name:"עוגת שוקולד מהירה",meal:"ארוחת בוקר",time:30,servings:8,diet:["צמחוני"],ingredients:[{name:"קמח",amount:200,unit:"גרם"},{name:"אבקת קקאו",amount:50,unit:"גרם"},{name:"סוכר",amount:180,unit:"גרם"},{name:"ביצים",amount:2,unit:"יח'"},{name:"חמאה",amount:100,unit:"גרם"},{name:"חלב",amount:100,unit:"מ\"ל"},{name:"אבקת אפייה",amount:1,unit:"כפית"}],steps:[{text:"חממו תנור ל-180°.",timer:null},{text:"ערבבו חמאה מומסת עם סוכר וביצים.",timer:null},{text:"הוסיפו חלב, קמח, קקאו ואבקת אפייה.",timer:null},{text:"אפו 25 דקות.",timer:25}],tip:"בדקו עם קיסם — חייב לצאת יבש"}
+];
+
+let userIngredients=[];
+let currentServings={};
+let expandedCard=null;
+let activeTimers={};
+let mealFilter="";
+let dietFilter="";
+
+function addChip(val){
+  val=val.trim().toLowerCase();
+  if(!val||userIngredients.includes(val))return;
+  userIngredients.push(val);
+  const wrap=document.getElementById('chip-wrap');
+  const chip=document.createElement('div');
+  chip.className='chip';
+  chip.innerHTML=`<span>${val}</span><button onclick="removeChip('${val}',this.parentElement)">×</button>`;
+  wrap.insertBefore(chip,document.getElementById('ingredient-input'));
+}
+function removeChip(val,el){
+  userIngredients=userIngredients.filter(i=>i!==val);
+  el.remove();
+}
+document.getElementById('ingredient-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter'||e.key===','){
+    e.preventDefault();
+    addChip(e.target.value.replace(',',''));
+    e.target.value='';
+  }
+});
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    const type=this.dataset.type;
+    const group=type==='meal'?'meal-filters':'diet-filters';
+    document.getElementById(group).querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    if(type==='meal')mealFilter=this.dataset.value;
+    else dietFilter=this.dataset.value;
+  });
+});
+
+function calcMatch(recipe){
+  const have=userIngredients;
+  const matched=recipe.ingredients.filter(i=>have.some(u=>i.name.includes(u)||u.includes(i.name)));
+  return{matched:matched.length,total:recipe.ingredients.length,pct:matched.length/recipe.ingredients.length};
+}
+function searchRecipes(){
+  let results=DB.map(r=>({...r,match:calcMatch(r)}))
+    .filter(r=>{
+      if(userIngredients.length>0&&r.match.pct<0.5)return false;
+      if(mealFilter&&r.meal!==mealFilter)return false;
+      if(dietFilter&&!r.diet.includes(dietFilter))return false;
+      return true;
+    })
+    .sort((a,b)=>b.match.pct-a.match.pct);
+  renderCards(results);
+}
+function renderCards(results){
+  const grid=document.getElementById('recipes-grid');
+  const header=document.getElementById('results-header');
+  const count=document.getElementById('results-count');
+  const title=document.getElementById('results-title');
+  header.style.display='flex';
+  count.textContent=`${results.length} מתכונים נמצאו`;
+  title.textContent=userIngredients.length?'מתכונים מומלצים':'כל המתכונים';
+  grid.innerHTML='';
+  if(!results.length){
+    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="emoji">🤷</div><p>לא נמצאו מתכונים מתאימים<br>נסו להוסיף עוד מרכיבים</p></div>`;
+    return;
+  }
+  results.forEach(r=>grid.appendChild(createCard(r)));
+}
+function createCard(recipe){
+  const savedFavs=JSON.parse(localStorage.getItem('favs')||'[]');
+  const isFav=savedFavs.includes(recipe.name);
+  const match=recipe.match||{matched:recipe.ingredients.length,total:recipe.ingredients.length,pct:1};
+  const pct=Math.round(match.pct*100);
+  const card=document.createElement('div');
+  card.className='recipe-card';
+  card.dataset.name=recipe.name;
+  const dietTags=recipe.diet.map(d=>`<span class="diet-tag ${d==='טבעוני'?'vegan':d==='צמחוני'?'vegetarian':''}">${d}</span>`).join('');
+  const baseServings=currentServings[recipe.name]||recipe.servings;
+  const ratio=baseServings/recipe.servings;
+  const haveSet=new Set(userIngredients);
+  const shoppingList=JSON.parse(localStorage.getItem('shopping')||'[]');
+  const ingListHTML=recipe.ingredients.map(i=>{
+    const have=haveSet.size>0&&haveSet.size>0&&userIngredients.some(u=>i.name.includes(u)||u.includes(i.name));
+    const isMissing=userIngredients.length>0&&!have;
+    const amt=formatAmount(i.amount*ratio);
+    const inShop=shoppingList.find(s=>s.name===i.name&&s.recipe===recipe.name);
+    return`<li class="${isMissing?'missing':'have'}"><span class="ing-name">${i.name}</span><span class="ing-amount">${amt} ${i.unit}${isMissing?`<button class="add-to-list-btn" onclick="addToShopping('${i.name}','${recipe.name}','${amt} ${i.unit}',this)">${inShop?'✓ נוסף':'+ רשימה'}</button>`:''}</span></li>`;
+  }).join('');
+  const stepsHTML=recipe.steps.map((s,idx)=>{
+    const timerId=`${recipe.name}-${idx}`;
+    return`<li class="step-item" onclick="toggleStep(this)">
+      <div class="step-num">${idx+1}</div>
+      <div class="step-content">
+        <div class="step-text">${s.text}</div>
+        ${s.timer?`<button class="step-timer-btn" id="tbtn-${timerId}" onclick="startTimer('${timerId}',${s.timer},this,event)">⏱ ${s.timer} דקות</button>`:''}
+      </div>
+    </li>`;
+  }).join('');
+  card.innerHTML=`
+    <div class="card-header" onclick="toggleCard(this.parentElement,'${recipe.name}')">
+      <div>
+        <div class="card-title">${recipe.name}</div>
+        <div class="card-meta">
+          <span>⏱ ${recipe.time} דק'</span>
+          <span>👥 ${recipe.meal}</span>
+        </div>
+      </div>
+      <button class="heart-btn" onclick="toggleFav('${recipe.name}',this);event.stopPropagation()">${isFav?'❤️':'🤍'}</button>
+    </div>
+    <div class="match-bar-wrap">
+      <div class="match-label"><span>${match.matched}/${match.total} מרכיבים</span><span>${pct}% התאמה</span></div>
+      <div class="match-bar"><div class="match-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="diet-tags">${dietTags}</div>
+    <div class="expand-indicator">לחצו להרחבה ▼</div>
+    <div class="recipe-detail">
+      <div class="detail-section">
+        <h3>🧑‍🍳 מנות</h3>
+        <div class="servings-control">
+          <button class="ctrl-btn" onclick="changeServings('${recipe.name}',-1,this)">−</button>
+          <span id="srv-${recipe.name}">${baseServings}</span>
+          <button class="ctrl-btn" onclick="changeServings('${recipe.name}',1,this)">+</button>
+          <span style="font-size:0.85rem;color:var(--text-light)">מנות</span>
+        </div>
+      </div>
+      <div class="detail-section">
+        <h3>🥕 מרכיבים</h3>
+        <ul class="ingredients-list" id="ing-${recipe.name}">${ingListHTML}</ul>
+      </div>
+      <div class="detail-section">
+        <h3>📋 הוראות הכנה</h3>
+        <ul class="steps-list">${stepsHTML}</ul>
+      </div>
+      <div class="tip-box"><strong>💡 טיפ: </strong>${recipe.tip}</div>
+      <button class="close-btn" onclick="toggleCard(this.closest('.recipe-card'),'${recipe.name}')">סגור ▲</button>
+    </div>`;
+  return card;
+}
+function formatAmount(n){
+  if(Number.isInteger(n))return n;
+  return Math.round(n*10)/10;
+}
+function toggleCard(card,name){
+  const wasExpanded=card.classList.contains('expanded');
+  document.querySelectorAll('.recipe-card.expanded').forEach(c=>c.classList.remove('expanded'));
+  if(!wasExpanded){
+    card.classList.add('expanded');
+    expandedCard=name;
+    setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'start'}),100);
+  }else{expandedCard=null;}
+}
+function changeServings(name,delta,btn){
+  const recipe=DB.find(r=>r.name===name);
+  if(!recipe)return;
+  const cur=currentServings[name]||recipe.servings;
+  const next=Math.max(1,cur+delta);
+  currentServings[name]=next;
+  document.getElementById(`srv-${name}`).textContent=next;
+  const ratio=next/recipe.servings;
+  const haveSet=new Set(userIngredients);
+  const shoppingList=JSON.parse(localStorage.getItem('shopping')||'[]');
+  const ingEl=document.getElementById(`ing-${name}`);
+  if(ingEl){
+    ingEl.innerHTML=recipe.ingredients.map(i=>{
+      const have=haveSet.size>0&&userIngredients.some(u=>i.name.includes(u)||u.includes(i.name));
+      const isMissing=userIngredients.length>0&&!have;
+      const amt=formatAmount(i.amount*ratio);
+      const inShop=shoppingList.find(s=>s.name===i.name&&s.recipe===name);
+      return`<li class="${isMissing?'missing':'have'}"><span class="ing-name">${i.name}</span><span class="ing-amount">${amt} ${i.unit}${isMissing?`<button class="add-to-list-btn" onclick="addToShopping('${i.name}','${name}','${amt} ${i.unit}',this)">${inShop?'✓ נוסף':'+ רשימה'}</button>`:''}</span></li>`;
+    }).join('');
+  }
+}
+function toggleStep(el){el.classList.toggle('done');}
+function startTimer(id,minutes,btn,e){
+  e.stopPropagation();
+  if(activeTimers[id]){
+    clearInterval(activeTimers[id].interval);
+    delete activeTimers[id];
+    btn.className='step-timer-btn';
+    btn.innerHTML=`⏱ ${minutes} דקות`;
+    return;
+  }
+  let secs=minutes*60;
+  btn.className='step-timer-btn running';
+  const update=()=>{
+    const m=Math.floor(secs/60);
+    const s=String(secs%60).padStart(2,'0');
+    btn.innerHTML=`<span class="timer-display">⏱ ${m}:${s}</span> (לחץ לעצירה)`;
+    if(secs<=0){
+      clearInterval(activeTimers[id].interval);
+      delete activeTimers[id];
+      btn.className='step-timer-btn';
+      btn.innerHTML=`✅ הטיימר הסתיים`;
+      playAlert();
+      return;
+    }
+    secs--;
+  };
+  update();
+  activeTimers[id]={interval:setInterval(update,1000)};
+}
+function playAlert(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [0,300,600].forEach(t=>{
+      const o=ctx.createOscillator();
+      const g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.frequency.value=880;
+      g.gain.setValueAtTime(0.3,ctx.currentTime+t/1000);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t/1000+0.3);
+      o.start(ctx.currentTime+t/1000);
+      o.stop(ctx.currentTime+t/1000+0.3);
+    });
+  }catch(e){}
+}
+function toggleFav(name,btn){
+  const favs=JSON.parse(localStorage.getItem('favs')||'[]');
+  const idx=favs.indexOf(name);
+  if(idx>=0){favs.splice(idx,1);btn.textContent='🤍';showToast('הוסר מהמועדפים');}
+  else{favs.push(name);btn.textContent='❤️';showToast('נוסף למועדפים ❤️');}
+  localStorage.setItem('favs',JSON.stringify(favs));
+}
+function surpriseMe(){
+  let filtered=DB;
+  if(mealFilter)filtered=filtered.filter(r=>r.meal===mealFilter);
+  if(dietFilter)filtered=filtered.filter(r=>r.diet.includes(dietFilter));
+  if(!filtered.length)filtered=DB;
+  const r=filtered[Math.floor(Math.random()*filtered.length)];
+  const result={...r,match:{matched:r.ingredients.length,total:r.ingredients.length,pct:1}};
+  document.getElementById('results-header').style.display='flex';
+  document.getElementById('results-title').textContent='הפתעה בשבילך 🎲';
+  document.getElementById('results-count').textContent='';
+  const grid=document.getElementById('recipes-grid');
+  grid.innerHTML='';
+  const card=createCard(result);
+  grid.appendChild(card);
+  setTimeout(()=>{toggleCard(card,r.name);card.scrollIntoView({behavior:'smooth',block:'start'});},100);
+}
+function addToShopping(name,recipe,amount,btn){
+  const list=JSON.parse(localStorage.getItem('shopping')||'[]');
+  if(list.find(i=>i.name===name&&i.recipe===recipe)){showToast('כבר ברשימה');return;}
+  list.push({name,recipe,amount,checked:false});
+  localStorage.setItem('shopping',JSON.stringify(list));
+  btn.textContent='✓ נוסף';
+  showToast(`${name} נוסף לרשימת הקניות`);
+}
+function openShopping(){
+  const list=JSON.parse(localStorage.getItem('shopping')||'[]');
+  const el=document.getElementById('shopping-list-items');
+  if(!list.length){el.innerHTML='<p style="color:var(--text-light);text-align:center;padding:24px">הרשימה ריקה</p>';}
+  else{
+    el.innerHTML=list.map((item,i)=>`
+      <div class="shopping-item">
+        <input type="checkbox" class="shopping-check" id="si-${i}" ${item.checked?'checked':''} onchange="toggleShoppingItem(${i})">
+        <label for="si-${i}" class="${item.checked?'checked':''}">${item.name} <span style="color:var(--text-light);font-size:0.85rem">${item.amount} (${item.recipe})</span></label>
+        <button class="del-btn" onclick="removeShoppingItem(${i})">🗑</button>
+      </div>`).join('');
+  }
+  document.getElementById('shopping-modal').classList.add('open');
+}
+function closeShopping(){document.getElementById('shopping-modal').classList.remove('open');}
+function toggleShoppingItem(i){
+  const list=JSON.parse(localStorage.getItem('shopping')||'[]');
+  list[i].checked=!list[i].checked;
+  localStorage.setItem('shopping',JSON.stringify(list));
+  openShopping();
+}
+function removeShoppingItem(i){
+  const list=JSON.parse(localStorage.getItem('shopping')||'[]');
+  list.splice(i,1);
+  localStorage.setItem('shopping',JSON.stringify(list));
+  openShopping();
+}
+function clearShopping(){
+  localStorage.removeItem('shopping');
+  openShopping();
+}
+document.getElementById('shopping-modal').addEventListener('click',function(e){if(e.target===this)closeShopping();});
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+searchRecipes();
+</script>
+</body>
+</html>
